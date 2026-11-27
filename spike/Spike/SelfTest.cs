@@ -53,6 +53,7 @@ public static class SelfTest
         Log($".NET            : {RuntimeInformation.FrameworkDescription}");
         Log($"İşlemci         : {Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")} ({Environment.ProcessorCount} mantıksal)");
         Log($"Program klasörü : {baseDir}");
+        Log($"ANSI kod sayfası: {GetACP()}");
         Log("");
 
         var modelDir = Path.Combine(baseDir, "models");
@@ -135,7 +136,6 @@ public static class SelfTest
                 DetectFace(Path.Combine(modelDir, YuNet), image!, Log);
             });
 
-            // Zorunlu değil: sonuç Aşama 2 tasarımını belirler.
             Check("FaceDetectorYN: Türkçe karakterli model yolu", () =>
             {
                 Require(image is not null, "görsel yok");
@@ -144,7 +144,7 @@ public static class SelfTest
                 var copy = Path.Combine(dir, YuNet);
                 File.Copy(Path.Combine(modelDir, YuNet), copy, overwrite: true);
                 DetectFace(copy, image!, Log);
-            }, required: false);
+            });
 
             Check("XImgProc.GuidedFilter", () =>
             {
@@ -155,7 +155,7 @@ public static class SelfTest
                 CvXImgProc.GuidedFilter(guide, alpha!, refined, 8, 1e-4);
                 Require(!refined.Empty() && refined.Size() == alpha!.Size(), "çıktı boyutu yanlış");
                 using var difference = new Mat();
-                Cv2.Absdiff(refined, alpha, difference);
+                Cv2.Absdiff(refined, alpha!, difference);
                 var change = Cv2.Mean(difference).Val0;
                 Log($"        ortalama değişim: {change:F5}");
                 Require(change is > 0 and < 0.1, "filtre sonucu beklenmedik");
@@ -192,6 +192,9 @@ public static class SelfTest
         Log(success ? "SONUÇ: BAŞARILI" : "SONUÇ: BAŞARISIZ");
         return new SelfTestResult(success, report.ToString());
     }
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetACP();
 
     private static void Require(bool condition, string message)
     {
@@ -232,10 +235,11 @@ public static class SelfTest
     {
         var tensor = new DenseTensor<float>([1, 3, bgr.Height, bgr.Width]);
         bgr.GetArray(out Vec3b[] pixels);
-        for (var y = 0; y < bgr.Height; y++)
-        for (var x = 0; x < bgr.Width; x++)
+        int height = bgr.Height, width = bgr.Width;
+        for (var y = 0; y < height; y++)
+        for (var x = 0; x < width; x++)
         {
-            var p = pixels[y * bgr.Width + x];
+            var p = pixels[y * width + x];
             tensor[0, 0, y, x] = ((rgb ? p.Item2 : p.Item0) - mean) * scale;
             tensor[0, 1, y, x] = (p.Item1 - mean) * scale;
             tensor[0, 2, y, x] = ((rgb ? p.Item0 : p.Item2) - mean) * scale;

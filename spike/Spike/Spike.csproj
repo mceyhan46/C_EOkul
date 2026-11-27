@@ -19,4 +19,18 @@
     <Content Include="samples\astronaut.png"
              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
+  <!-- Kamera/video kullanılmadığı için FFmpeg eklentisi (LGPL, ~27 MB) pakete alınmaz. -->
+  <Target Name="FfmpegCikar" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)"
+                            Condition="$([System.String]::Copy('%(Filename)').StartsWith('opencv_videoio_ffmpeg'))" />
+    </ItemGroup>
+  </Target>
+  <!-- ONNX Runtime paketinin .lib dosyaları yalnız C++ derlemesi içindir. -->
+  <Target Name="LibDosyalariniSil" AfterTargets="Publish">
+    <ItemGroup>
+      <YayimLib Include="$(PublishDir)*.lib" />
+    </ItemGroup>
+    <Delete Files="@(YayimLib)" />
+  </Target>
 </Project>

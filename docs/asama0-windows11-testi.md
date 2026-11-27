@@ -9,7 +9,7 @@ Amaç: deneme programının geliştirme araçları kurulu olmayan bir Windows 11
 5. Pencerede **BAŞARILI** veya **BAŞARISIZ** yazar. Alttaki metnin tamamını kopyalayıp (Ctrl+A, Ctrl+C) gönderin.
 6. Pencere hiç açılmazsa veya bir DLL hatası çıkarsa hata penceresinin ekran görüntüsünü gönderin.
 
-Mümkünse iki durumu ayrı deneyin ve hangisi olduğunu yazın:
+Mümkünse iki durumu ayrı deneyin ve hangisi olduğunu yazın. Yerel DLL analizine göre temiz bilgisayarda **ONNX Runtime denemelerinin HATA vermesi beklenir** (Visual C++ dosyaları eksik); sonuç yine de değerlidir:
 
 - **Temiz bilgisayar:** Ayarlar → Uygulamalar listesinde "Microsoft Visual C++ 2015-2022 Redistributable (x64)" **yok**.
 - **Redistributable kurulu bilgisayar.**
