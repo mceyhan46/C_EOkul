@@ -24,6 +24,10 @@ jobs:
         shell: pwsh
         run: ./scripts/indir-modeller.ps1
 
+      - name: Visual C++ dosyalarını hazırla
+        shell: pwsh
+        run: ./scripts/vc-dosyalari.ps1
+
       - name: Tek dosya yayımla (self-contained)
         run: >
           dotnet publish spike/Spike/Spike.csproj -c Release -r win-x64 --self-contained true
@@ -48,6 +52,9 @@ jobs:
           if (-not $p.WaitForExit(180000)) { $p.Kill(); throw 'Zaman aşımı' }
           Get-ChildItem $out -File -Include rapor.txt, crash.txt -Recurse | ForEach-Object { Get-Content $_ -Encoding utf8 }
           if ($p.ExitCode -ne 0) { throw "Çıkış kodu: $($p.ExitCode)" }
+          if (-not (Select-String -Path (Join-Path $out 'rapor.txt') -SimpleMatch '[GEÇTİ] Visual C++ dosyaları program klasöründen' -Encoding utf8)) {
+            throw 'Visual C++ dosyaları program klasöründen yüklenmedi'
+          }
 
       - name: Yerel DLL bağımlılıkları (VC++ Redistributable)
         if: always()
@@ -57,7 +64,8 @@ jobs:
           [Console]::OutputEncoding = [Text.Encoding]::UTF8
           python -m pip install --quiet pefile==2024.8.26
           New-Item -ItemType Directory -Force publish\sonuclar | Out-Null
-          python scripts/yerel-bagimliliklar.py publish/ayri | Tee-Object publish\sonuclar\bagimliliklar.txt
+          python scripts/yerel-bagimliliklar.py publish/tek-dosya publish/ayri | Tee-Object publish\sonuclar\bagimliliklar.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Eksik Visual C++ DLL var' }
 
       - name: Boyut ölçümü
         if: always()
@@ -74,7 +82,7 @@ jobs:
           $lines += Row 'TOPLAM tek-dosya klasörü' (Get-ChildItem $root -Recurse -File | Measure-Object Length -Sum).Sum
           Compress-Archive publish\tek-dosya\* publish\olcum.zip -Force
           $lines += Row 'TOPLAM tek-dosya (zip)' (Get-Item publish\olcum.zip).Length
-          Get-ChildItem publish\ayri -File -Include onnxruntime*.dll, OpenCvSharp*.dll, opencv*.dll, *_cor3.dll -Recurse |
+          Get-ChildItem publish\ayri -File -Include onnxruntime*.dll, OpenCvSharp*.dll, opencv*.dll, *_cor3.dll, msvcp140*.dll, vcruntime140*.dll -Recurse |
             Sort-Object Length -Descending | ForEach-Object { $lines += Row ('ayri\' + $_.Name) $_.Length }
           $lines += Row 'TOPLAM ayri klasörü' (Get-ChildItem publish\ayri -Recurse -File | Measure-Object Length -Sum).Sum
           $lines | Set-Content publish\sonuclar\boyutlar.md -Encoding utf8

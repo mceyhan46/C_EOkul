@@ -8,6 +8,8 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        // ONNX Runtime yüklenmeden önce çağrılmalı.
+        VcRuntime.Preload(AppContext.BaseDirectory);
 
         var selfTest = e.Args.Contains("--selftest");
         var outIndex = Array.IndexOf(e.Args, "--out");

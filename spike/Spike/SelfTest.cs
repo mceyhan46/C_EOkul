@@ -111,6 +111,9 @@ public static class SelfTest
                 Require(min < 0.05 && max > 0.95 && mean is > 0.2 and < 0.8, "alfa beklenen aralıkta değil");
             });
 
+            // Zorunlu değil: sistemde Redistributable varsa başka bir bileşen sistem kopyasını önce yüklemiş olabilir.
+            Check("Visual C++ dosyaları program klasöründen", () => CheckVcRuntime(baseDir, Log), required: false);
+
             Check("ONNX Runtime + YuNet çıkarımı", () =>
             {
                 Require(image is not null, "görsel yok");
@@ -199,6 +202,23 @@ public static class SelfTest
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);
+    }
+
+    private static void CheckVcRuntime(string baseDir, Action<string> log)
+    {
+        var expected = Path.TrimEndingDirectorySeparator(Path.GetFullPath(baseDir));
+        using var process = Process.GetCurrentProcess();
+        var loaded = process.Modules.Cast<ProcessModule>()
+            .Where(m => VcRuntime.Files.Contains(m.ModuleName, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var module in loaded) log($"        {module.ModuleName} <- {module.FileName}");
+        foreach (var name in VcRuntime.Files)
+        {
+            var matches = loaded.Where(m => m.ModuleName.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            Require(matches.Count > 0, $"{name} yüklü değil");
+            Require(matches.All(m => string.Equals(Path.GetDirectoryName(m.FileName), expected, StringComparison.OrdinalIgnoreCase)),
+                $"{name} program klasörü dışından yüklendi");
+        }
     }
 
     private static void VerifyModels(string modelDir, Action<string> log)

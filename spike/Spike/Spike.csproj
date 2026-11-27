@@ -19,6 +19,16 @@
     <Content Include="samples\astronaut.png"
              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
+  <!-- Visual C++ dosyaları exe'nin yanında durur (scripts/vc-dosyalari.ps1 hazırlar). -->
+  <ItemGroup>
+    <Content Include="..\..\redist\x64\*.dll" Link="%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <VcDosyasi Include="msvcp140.dll;msvcp140_1.dll;vcruntime140.dll;vcruntime140_1.dll" />
+  </ItemGroup>
+  <Target Name="VcDosyalariniDenetle" BeforeTargets="PrepareForPublish">
+    <Error Condition="!Exists('..\..\redist\x64\%(VcDosyasi.Identity)')"
+           Text="Eksik: redist\x64\%(VcDosyasi.Identity). Önce scripts\vc-dosyalari.ps1 çalıştırın." />
+  </Target>
   <!-- Kamera/video kullanılmadığı için FFmpeg eklentisi (LGPL, ~27 MB) pakete alınmaz. -->
   <Target Name="FfmpegCikar" AfterTargets="ResolvePackageAssets">
     <ItemGroup>
