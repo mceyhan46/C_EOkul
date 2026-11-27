@@ -26,7 +26,7 @@ Bu, tam boru hattının süresi **değildir**; 1,5 sn hedefi Aşama 2'de ölçü
 - Çözüm: `app.manifest` içinde `activeCodePage = UTF-8`. İkinci çalıştırmada geçti. Mimari değişmedi.
 - Ana uygulamanın manifestine de eklenmeli.
 
-## Visual C++ Redistributable
+## Visual C++ Redistributable (ilk bulgu; çözümü en altta)
 Statik DLL analizi: `onnxruntime.dll` şu dosyaları istiyor ve **pakette yoklar**:
 `msvcp140.dll`, `msvcp140_1.dll`, `vcruntime140.dll`, `vcruntime140_1.dll`.
 `OpenCvSharpExtern.dll` bunları istemiyor.
@@ -69,12 +69,13 @@ Pakete alınmayanlar: `opencv_videoio_ffmpeg4130_64.dll` (27,25 MB, LGPL; video 
 | MODNet ONNX dönüşümü | Apache-2.0 | yakhyo/modnet LICENSE |
 | YuNet | MIT | opencv_zoo model klasörü LICENSE |
 | Örnek fotoğraf | Kamu malı | scikit-image veri açıklaması |
+| Visual C++ çalışma zamanı | Microsoft yazılım lisans koşulları (REDIST listesi) | Microsoft Learn |
 
 `OpenCvSharpExtern.dll` içine statik bağlanan üçüncü taraf kütüphanelerin (görüntü kodlayıcıları, olasılıkla Tesseract) lisans listesi Aşama 4'te çıkarılmalı.
 
 ## Doğrulanamayanlar
 - Windows 11'de çalışma (CI sunucusu Windows Server 2025).
-- Visual C++ Redistributable olmayan temiz makine.
+- Visual C++ Redistributable olmayan temiz makine (dosyalar artık pakette; yine de denenmedi).
 - Deneme penceresinin (WPF arayüzü) açılışı: CI yalnız `--selftest` modunu çalıştırdı.
 - CI'ın ürettiği görseller incelenmedi (bu çalışma ortamından artefakt indirilemiyor).
 - Saç teli / halo kalitesi (Aşama 2).
@@ -82,9 +83,20 @@ Pakete alınmayanlar: `opencv_videoio_ffmpeg4130_64.dll` (27,25 MB, LGPL; video 
 - Windows 11 N sürümleri: `OpenCvSharpExtern.dll` Media Foundation DLL'lerini istiyor; Media Feature Pack yoksa yüklenmeyebilir (tahmin, denenmedi).
 - DirectML (GPU) ve WPF-UI.
 
-## Riskler ve kararlar
-1. **Visual C++ dosyaları:** (A) kurulum programı Redistributable'ı kursun (mevcut plan) veya
-   (B) dört DLL uygulama klasörüne konsun. Öneri: B; yönetici yetkisi ve ayrı kurulum gerektirmez. Güncellemeleri bize kalır.
-2. **OpenCvSharp4 bakım modunda;** aktif geliştirme OpenCvSharp5'te ([README](https://github.com/shimat/opencvsharp)).
-   Öneri: denenmiş olan 4.13 ile devam. Değişiklik onay gerektirir.
-3. **MODNet ONNX dosyası üçüncü taraf dönüşümü.** Resmi dosyayla karşılaştırılmadı. SHA-256 sabitlendi.
+## Kararlar (27.11.2026, onaylandı)
+1. **Visual C++ dosyaları uygulama klasöründe (B).** Uygulandı; sonuçlar aşağıda.
+2. **OpenCvSharp4 4.13 ile devam.**
+
+## Güncelleme: app-local Visual C++ ([çalıştırma](https://github.com/mceyhan46/C_EOkul/actions/runs/45921339829))
+- Dosyalar CI'da Visual Studio redist klasöründen alındı (sürüm 14.52.37029.0, Microsoft imzası doğrulandı); depoda tutulmuyor.
+- Açılışta program klasöründen önceden yükleniyor. Denemede dört DLL'in de **program klasöründen** yüklendiği görüldü.
+- Statik analiz: gereken Visual C++ DLL'lerinden eksik yok. Tüm denemeler geçti; MODNet ortanca 440 ms (AMD, 4 mantıksal işlemci).
+- Boyut: toplam klasör 246,60 MB, ZIP 115,72 MB (yukarıdaki tabloya göre yaklaşık +0,9 MB).
+- **Bu sunucuda Redistributable zaten kurulu;** kurulu olmayan bilgisayarda çalıştığı henüz denenmedi.
+- Lisans: Microsoft bu dosyaların dağıtımını [lisanslı Visual Studio kullanıcılarına ve lisans koşullarına](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files) bağlıyor.
+  Dağıtımdan önce Visual Studio lisans durumunuz (ör. Community koşulları) kontrol edilmeli.
+- Güncellemeler bize ait: Windows Update bu kopyaları güncellemez; yeni sürümle yeniden yayımlamak gerekir. Microsoft bu yüzden merkezi kurulumu öneriyor.
+
+## Açık riskler
+- **OpenCvSharp4 bakım modunda;** aktif geliştirme OpenCvSharp5'te ([README](https://github.com/shimat/opencvsharp)).
+- **MODNet ONNX dosyası üçüncü taraf dönüşümü.** Resmi dosyayla karşılaştırılmadı. SHA-256 sabitlendi.
