@@ -32,6 +32,14 @@ public partial class App : Application
             return;
         }
 
-        new MainWindow(outDir).Show();
+        // --uitest: pencereyi açar, deneme ve görseller bitince çıkış koduyla kapanır (CI).
+        Action<bool>? finished = e.Args.Contains("--uitest")
+            ? ok =>
+            {
+                Environment.ExitCode = ok ? 0 : 1;
+                Shutdown(ok ? 0 : 1);
+            }
+            : null;
+        new MainWindow(outDir, finished).Show();
     }
 }

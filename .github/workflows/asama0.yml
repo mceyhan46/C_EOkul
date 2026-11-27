@@ -56,6 +56,20 @@ jobs:
             throw 'Visual C++ dosyaları program klasöründen yüklenmedi'
           }
 
+      - name: Pencere testi (arayüz açılır, görseller yüklenir)
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          $app = Join-Path $env:RUNNER_TEMP 'Okul İşleri çğşöü\Deneme'
+          $out = Join-Path $env:RUNNER_TEMP 'pencere sonuçları'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          $p = Start-Process -FilePath (Join-Path $app 'EOkulSpike.exe') -ArgumentList '--uitest', '--out', "`"$out`"" -PassThru
+          $null = $p.Handle
+          if (-not $p.WaitForExit(180000)) { $p.Kill(); throw 'Zaman aşımı' }
+          Get-ChildItem $out -File -Filter pencere-hatasi.txt | ForEach-Object { Get-Content $_ -Encoding utf8 }
+          if ($p.ExitCode -ne 0) { throw "Pencere testi çıkış kodu: $($p.ExitCode)" }
+          Write-Host 'Pencere testi geçti.'
+
       - name: Yerel DLL bağımlılıkları (VC++ Redistributable)
         if: always()
         shell: pwsh
