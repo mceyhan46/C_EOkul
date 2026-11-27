@@ -97,6 +97,13 @@ Pakete alınmayanlar: `opencv_videoio_ffmpeg4130_64.dll` (27,25 MB, LGPL; video 
   Dağıtımdan önce Visual Studio lisans durumunuz (ör. Community koşulları) kontrol edilmeli.
 - Güncellemeler bize ait: Windows Update bu kopyaları güncellemez; yeni sürümle yeniden yayımlamak gerekir. Microsoft bu yüzden merkezi kurulumu öneriyor.
 
+## Windows 11'de ilk kullanıcı testi (27.11.2026)
+- Deneme penceresi **çöktü**: `BitmapImage.FinalizeCreation` → `ArgumentNullException (key)`.
+- Neden: akıştan yüklenen görselde `BitmapCreateOptions.IgnoreImageCache` kullanılması. CI pencereyi açmadığı için yakalanmamıştı.
+- Düzeltme: seçenek kaldırıldı; görsel hatası artık deneme raporunu silmiyor; CI'a pencere testi (`--uitest`) eklendi
+  ([geçen çalıştırma](https://github.com/mceyhan46/C_EOkul/actions/runs/45950641503)).
+- Kullanıcı bilgisayarındaki ONNX/OpenCV deneme sonuçları ve düzeltilmiş paketin sonucu **henüz bekleniyor**.
+
 ## Açık riskler
 - **OpenCvSharp4 bakım modunda;** aktif geliştirme OpenCvSharp5'te ([README](https://github.com/shimat/opencvsharp)).
 - **MODNet ONNX dosyası üçüncü taraf dönüşümü.** Resmi dosyayla karşılaştırılmadı. SHA-256 sabitlendi.
