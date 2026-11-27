@@ -1,0 +1,17 @@
+<Window x:Class="EOkulSpike.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="E-Okul Foto Studio - Uyumluluk Denemesi" Width="900" Height="700"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <TextBlock x:Name="Status" DockPanel.Dock="Top" FontSize="20" FontWeight="SemiBold"
+                   Text="Deneme çalışıyor, lütfen bekleyin..." />
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,12">
+            <Image x:Name="Before" Width="260" Height="260" Margin="0,0,12,0" />
+            <Image x:Name="Alpha" Width="260" Height="260" Margin="0,0,12,0" />
+            <Image x:Name="After" Width="260" Height="260" />
+        </StackPanel>
+        <TextBox x:Name="Report" IsReadOnly="True" FontFamily="Consolas"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
+    </DockPanel>
+</Window>

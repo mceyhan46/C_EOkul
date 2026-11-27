@@ -1,0 +1,99 @@
+name: asama0-uyumluluk
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spike:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Modelleri indir ve doğrula
+        shell: pwsh
+        run: ./scripts/indir-modeller.ps1
+
+      - name: Tek dosya yayımla (self-contained)
+        run: >
+          dotnet publish spike/Spike/Spike.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none -p:TreatWarningsAsErrors=false -o publish/tek-dosya
+
+      - name: Ayrı dosyalarla yayımla (DLL ölçümü için)
+        run: >
+          dotnet publish spike/Spike/Spike.csproj -c Release -r win-x64 --self-contained true
+          -p:DebugType=none -o publish/ayri
+
+      - name: Tek dosya exe'yi Türkçe karakterli klasörden çalıştır
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          $app = Join-Path $env:RUNNER_TEMP 'Okul İşleri çğşöü\Deneme'
+          $out = Join-Path $PWD 'publish\sonuclar'
+          New-Item -ItemType Directory -Force $app, $out | Out-Null
+          Copy-Item publish\tek-dosya\* $app -Recurse -Force
+          $p = Start-Process -FilePath (Join-Path $app 'EOkulSpike.exe') -ArgumentList '--selftest', '--out', "`"$out`"" -PassThru
+          $null = $p.Handle
+          if (-not $p.WaitForExit(180000)) { $p.Kill(); throw 'Zaman aşımı' }
+          Get-ChildItem $out -File -Include rapor.txt, crash.txt -Recurse | ForEach-Object { Get-Content $_ -Encoding utf8 }
+          if ($p.ExitCode -ne 0) { throw "Çıkış kodu: $($p.ExitCode)" }
+
+      - name: Yerel DLL bağımlılıkları (VC++ Redistributable)
+        if: always()
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          python -m pip install --quiet pefile==2024.8.26
+          New-Item -ItemType Directory -Force publish\sonuclar | Out-Null
+          python scripts/yerel-bagimliliklar.py publish/ayri | Tee-Object publish\sonuclar\bagimliliklar.txt
+
+      - name: Boyut ölçümü
+        if: always()
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          New-Item -ItemType Directory -Force publish\sonuclar | Out-Null
+          $lines = @('| Dosya | MB |', '|---|---:|')
+          function Row($name, $bytes) { '| {0} | {1:N2} |' -f $name, ($bytes / 1MB) }
+          $root = (Resolve-Path publish\tek-dosya).Path
+          Get-ChildItem $root -Recurse -File | Sort-Object Length -Descending | ForEach-Object {
+            $lines += Row ('tek-dosya\' + $_.FullName.Substring($root.Length + 1)) $_.Length
+          }
+          $lines += Row 'TOPLAM tek-dosya klasörü' (Get-ChildItem $root -Recurse -File | Measure-Object Length -Sum).Sum
+          Compress-Archive publish\tek-dosya\* publish\olcum.zip -Force
+          $lines += Row 'TOPLAM tek-dosya (zip)' (Get-Item publish\olcum.zip).Length
+          Get-ChildItem publish\ayri -File -Include onnxruntime*.dll, OpenCvSharp*.dll, opencv*.dll, *_cor3.dll -Recurse |
+            Sort-Object Length -Descending | ForEach-Object { $lines += Row ('ayri\' + $_.Name) $_.Length }
+          $lines += Row 'TOPLAM ayri klasörü' (Get-ChildItem publish\ayri -Recurse -File | Measure-Object Length -Sum).Sum
+          $lines | Set-Content publish\sonuclar\boyutlar.md -Encoding utf8
+          $lines
+          $lines | Add-Content $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+      - name: Windows 11 test paketi
+        shell: pwsh
+        run: Copy-Item docs\asama0-windows11-testi.md publish\tek-dosya\OKU-BENI.md
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows11-test-paketi
+          path: publish/tek-dosya
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: sonuclar
+          path: publish/sonuclar
+          retention-days: 14
