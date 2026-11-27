@@ -3,7 +3,7 @@ name: asama0-uyumluluk
 on:
   push:
     branches: ['**']
-    paths-ignore: ['**/*.md']
+    paths: ['spike/**', 'models/**', '.github/workflows/asama0.yml']
   workflow_dispatch:
 
 permissions:

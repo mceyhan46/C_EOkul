@@ -1,0 +1,94 @@
+name: ci
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['**/*.md']
+  pull_request:
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Modelleri indir ve doğrula
+        shell: pwsh
+        run: ./scripts/indir-modeller.ps1
+
+      - name: Visual C++ dosyalarını hazırla
+        shell: pwsh
+        run: ./scripts/vc-dosyalari.ps1
+
+      - name: Derle (x64)
+        run: dotnet build EOkulStudio.sln -c Release -p:Platform=x64
+
+      - name: Testler
+        run: >
+          dotnet test --solution EOkulStudio.sln -c Release -p:Platform=x64 --no-build
+          --results-directory ${{ github.workspace }}/publish/test-sonuclari
+          --coverage --coverage-output-format cobertura
+
+      - name: Core kapsam eşiği
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          python scripts/kapsam-denetle.py publish/test-sonuclari EOkulStudio.Core 85
+          if ($LASTEXITCODE -ne 0) { throw 'Core kapsamı yetersiz' }
+          python scripts/kapsam-denetle.py publish/test-sonuclari EOkulStudio.Infrastructure 0
+
+      - name: Tek dosya yayımla (self-contained)
+        run: >
+          dotnet publish src/EOkulStudio.App/EOkulStudio.App.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none -o publish/uygulama
+
+      - name: Yerel DLL bağımlılıkları
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          dotnet publish src/EOkulStudio.App/EOkulStudio.App.csproj -c Release -r win-x64 --self-contained true -p:DebugType=none -o publish/ayri
+          if ($LASTEXITCODE -ne 0) { throw 'Yayım başarısız' }
+          python -m pip install --quiet pefile==2024.8.26
+          python scripts/yerel-bagimliliklar.py publish/uygulama publish/ayri
+          if ($LASTEXITCODE -ne 0) { throw 'Eksik Visual C++ DLL var' }
+
+      - name: Paketi Türkçe karakterli klasörden çalıştır (duman testi)
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          $root = Join-Path $env:RUNNER_TEMP 'Okul İşleri çğşöü'
+          $app = Join-Path $root 'Program'
+          $data = Join-Path $root 'Veri'
+          New-Item -ItemType Directory -Force $app | Out-Null
+          Copy-Item publish\uygulama\* $app -Recurse -Force
+          $p = Start-Process -FilePath (Join-Path $app 'EOkulFotoStudio.exe') -ArgumentList '--smoke', '--data', "`"$data`"" -PassThru
+          $null = $p.Handle
+          if (-not $p.WaitForExit(120000)) { $p.Kill(); throw 'Zaman aşımı' }
+          $logs = Get-ChildItem (Join-Path $data 'logs') -Filter *.log -ErrorAction SilentlyContinue
+          if ($logs) { $logs | ForEach-Object { Get-Content $_ -Encoding utf8 } }
+          if ($p.ExitCode -ne 0) { throw "Çıkış kodu: $($p.ExitCode)" }
+          foreach ($expected in 'Yerel kütüphaneler: ', 'Duman testi: pencere çizildi') {
+            if (-not ($logs | Select-String -SimpleMatch $expected -Encoding utf8)) { throw "Günlükte yok: $expected" }
+          }
+          $files = Get-ChildItem publish\uygulama -Recurse -File
+          $mb = ($files | Measure-Object Length -Sum).Sum / 1MB
+          'Paket: {0} dosya, {1:N1} MB' -f $files.Count, $mb | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: eokul-foto-studio-iskelet
+          path: publish/uygulama
+          retention-days: 14

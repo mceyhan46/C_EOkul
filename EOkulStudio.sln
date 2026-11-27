@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{124A252B-6CD1-5653-A652-AA2DCE818F97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F6E48F05-25D8-5E91-948F-05DD5FECD6B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.App", "src\EOkulStudio.App\EOkulStudio.App.csproj", "{0A46CF65-225E-5FC8-AD5D-30250F338FB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Core", "src\EOkulStudio.Core\EOkulStudio.Core.csproj", "{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Imaging", "src\EOkulStudio.Imaging\EOkulStudio.Imaging.csproj", "{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Infrastructure", "src\EOkulStudio.Infrastructure\EOkulStudio.Infrastructure.csproj", "{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Core.Tests", "tests\EOkulStudio.Core.Tests\EOkulStudio.Core.Tests.csproj", "{C612D9FF-4808-5D96-9CD7-16151CE74A44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Infrastructure.Tests", "tests\EOkulStudio.Infrastructure.Tests\EOkulStudio.Infrastructure.Tests.csproj", "{CF836247-3414-5778-8EFC-E1C8F403C441}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A46CF65-225E-5FC8-AD5D-30250F338FB3}.Debug|x64.ActiveCfg = Debug|x64
+		{0A46CF65-225E-5FC8-AD5D-30250F338FB3}.Debug|x64.Build.0 = Debug|x64
+		{0A46CF65-225E-5FC8-AD5D-30250F338FB3}.Release|x64.ActiveCfg = Release|x64
+		{0A46CF65-225E-5FC8-AD5D-30250F338FB3}.Release|x64.Build.0 = Release|x64
+		{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB}.Debug|x64.ActiveCfg = Debug|x64
+		{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB}.Debug|x64.Build.0 = Debug|x64
+		{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB}.Release|x64.ActiveCfg = Release|x64
+		{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB}.Release|x64.Build.0 = Release|x64
+		{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E}.Debug|x64.ActiveCfg = Debug|x64
+		{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E}.Debug|x64.Build.0 = Debug|x64
+		{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E}.Release|x64.ActiveCfg = Release|x64
+		{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E}.Release|x64.Build.0 = Release|x64
+		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68}.Debug|x64.ActiveCfg = Debug|x64
+		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68}.Debug|x64.Build.0 = Debug|x64
+		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68}.Release|x64.ActiveCfg = Release|x64
+		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68}.Release|x64.Build.0 = Release|x64
+		{C612D9FF-4808-5D96-9CD7-16151CE74A44}.Debug|x64.ActiveCfg = Debug|x64
+		{C612D9FF-4808-5D96-9CD7-16151CE74A44}.Debug|x64.Build.0 = Debug|x64
+		{C612D9FF-4808-5D96-9CD7-16151CE74A44}.Release|x64.ActiveCfg = Release|x64
+		{C612D9FF-4808-5D96-9CD7-16151CE74A44}.Release|x64.Build.0 = Release|x64
+		{CF836247-3414-5778-8EFC-E1C8F403C441}.Debug|x64.ActiveCfg = Debug|x64
+		{CF836247-3414-5778-8EFC-E1C8F403C441}.Debug|x64.Build.0 = Debug|x64
+		{CF836247-3414-5778-8EFC-E1C8F403C441}.Release|x64.ActiveCfg = Release|x64
+		{CF836247-3414-5778-8EFC-E1C8F403C441}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0A46CF65-225E-5FC8-AD5D-30250F338FB3} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
+		{E2B30B50-3C9C-5DE5-8208-B89DB31DB8DB} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
+		{820DD585-BFEE-5D3A-9718-AA2CFA3E1B5E} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
+		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
+		{C612D9FF-4808-5D96-9CD7-16151CE74A44} = {F6E48F05-25D8-5E91-948F-05DD5FECD6B0}
+		{CF836247-3414-5778-8EFC-E1C8F403C441} = {F6E48F05-25D8-5E91-948F-05DD5FECD6B0}
+	EndGlobalSection
+EndGlobal

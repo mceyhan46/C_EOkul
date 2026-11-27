@@ -1,0 +1,29 @@
+<Project>
+  <!-- Çalıştırılabilir projelerin yanında duran dosyalar: modeller ve Visual C++ DLL'leri. -->
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)..\models\*.onnx;$(MSBuildThisFileDirectory)..\models\models.json"
+             Link="models\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="$(MSBuildThisFileDirectory)..\redist\x64\*.dll" Link="%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <VcDosyasi Include="msvcp140.dll;msvcp140_1.dll;vcruntime140.dll;vcruntime140_1.dll" />
+  </ItemGroup>
+  <Target Name="VcDosyalariniDenetle" BeforeTargets="PrepareForPublish">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\redist\x64\%(VcDosyasi.Identity)')"
+           Text="Eksik: redist\x64\%(VcDosyasi.Identity). Önce scripts\vc-dosyalari.ps1 çalıştırın." />
+  </Target>
+  <!-- Kamera/video kullanılmadığı için FFmpeg eklentisi (LGPL, ~27 MB) pakete alınmaz. -->
+  <Target Name="FfmpegCikar" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)"
+                            Condition="$([System.String]::Copy('%(Filename)').StartsWith('opencv_videoio_ffmpeg'))" />
+    </ItemGroup>
+  </Target>
+  <!-- ONNX Runtime paketinin .lib dosyaları yalnız C++ derlemesi içindir. -->
+  <Target Name="LibDosyalariniSil" AfterTargets="Publish">
+    <ItemGroup>
+      <YayimLib Include="$(PublishDir)*.lib" />
+    </ItemGroup>
+    <Delete Files="@(YayimLib)" />
+  </Target>
+</Project>
