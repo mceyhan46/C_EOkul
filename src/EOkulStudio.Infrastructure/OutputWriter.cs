@@ -32,6 +32,8 @@ public static class OutputWriter
             throw new ArgumentException("Kaynak bir E_Okul klasörünün içinde.", nameof(sourcePath));
 
         var directory = OutputLocation.DirectoryFor(source);
+        // Bağlantı olan bir E_Okul kaynak klasörü gösterebilir; asıl fotoğrafın üzerine yazılmamalı.
+        if (FolderLinks.IsLink(new DirectoryInfo(directory))) throw new OutputNotWritableException(directory);
         var created = !Directory.Exists(directory);
         try
         {

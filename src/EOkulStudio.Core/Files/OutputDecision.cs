@@ -39,11 +39,11 @@ public static class OutputDecision
     {
         if (!outputExists) return OutputAction.Write;
 
-        if (entry is { HasOutput: true })
+        if (entry?.OutputSha256 is { } written)
         {
-            var unchanged = string.Equals(entry.SourceSha256, sourceSha256, StringComparison.OrdinalIgnoreCase);
+            var unchanged = string.Equals(written, sourceSha256, StringComparison.OrdinalIgnoreCase);
             if (!unchanged) return OutputAction.Write; // fotoğraf değişmiş: kendi eski çıktısı yenilenir
-            if (resuming) return OutputAction.SkipAlreadyProcessed;
+            if (resuming && entry.HasOutput) return OutputAction.SkipAlreadyProcessed;
         }
 
         return policy switch

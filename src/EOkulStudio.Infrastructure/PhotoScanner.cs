@@ -92,7 +92,7 @@ public sealed class PhotoScanner
                     // Bağlantı klasörleri (junction/symlink) döngüye yol açabildiği için izlenmez.
                     if (includeSubfolders
                         && !OutputLocation.IsOutputFolderName(directory.Name)
-                        && directory.LinkTarget is null)
+                        && !FolderLinks.IsLink(directory))
                     {
                         pending.Push(directory.FullName);
                     }

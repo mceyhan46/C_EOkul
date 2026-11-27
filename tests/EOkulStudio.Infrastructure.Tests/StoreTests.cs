@@ -89,6 +89,15 @@ public sealed class ProcessingRecordStoreTests : IDisposable
             File.GetAttributes(_store.FilePath).Should().HaveFlag(FileAttributes.Hidden);
     }
 
+    [Fact]
+    public void Ownership_of_an_earlier_output_is_saved()
+    {
+        _store.Upsert(Entry("a.jpg"));
+        _store.Upsert(Entry("a.jpg", PhotoStatus.Failed) with { SourceSha256 = "yeni" });
+
+        _store.Load().Record.Find("a.jpg")!.OutputSha256.Should().Be("abc");
+    }
+
     [Theory]
     [InlineData("{ bozuk")]
     [InlineData("null")]

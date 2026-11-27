@@ -8,6 +8,13 @@
              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <VcDosyasi Include="msvcp140.dll;msvcp140_1.dll;vcruntime140.dll;vcruntime140_1.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <ModelDosyasi Include="modnet_photographic.onnx;face_detection_yunet_2023mar.onnx" />
+  </ItemGroup>
+  <Target Name="ModelDosyalariniDenetle" BeforeTargets="PrepareForPublish">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\models\%(ModelDosyasi.Identity)')"
+           Text="Eksik: models\%(ModelDosyasi.Identity). Önce scripts\indir-modeller.ps1 çalıştırın." />
+  </Target>
   <Target Name="VcDosyalariniDenetle" BeforeTargets="PrepareForPublish">
     <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\redist\x64\%(VcDosyasi.Identity)')"
            Text="Eksik: redist\x64\%(VcDosyasi.Identity). Önce scripts\vc-dosyalari.ps1 çalıştırın." />

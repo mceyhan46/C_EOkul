@@ -21,8 +21,17 @@ public sealed record RecordEntry
     public string SettingsVersion { get; init; } = string.Empty;
     public DateTimeOffset UpdatedAt { get; init; }
 
+    /// <summary>
+    /// Son işlem başarısız olduğunda, E_Okul'da duran eski çıktının üretildiği kaynağın özeti.
+    /// </summary>
+    public string? PreviousOutputSha256 { get; init; }
+
     [JsonIgnore]
     public bool HasOutput => Status is PhotoStatus.Success or PhotoStatus.NeedsReview;
+
+    /// <summary>Programın bu adla yazdığı dosyanın kaynak özeti; hiç yazmadıysa null.</summary>
+    [JsonIgnore]
+    public string? OutputSha256 => HasOutput ? SourceSha256 : PreviousOutputSha256;
 }
 
 public sealed record ProcessingRecord
@@ -35,14 +44,27 @@ public sealed record ProcessingRecord
     public RecordEntry? Find(string sourceName) =>
         Entries.FirstOrDefault(e => string.Equals(e.SourceName, sourceName, StringComparison.OrdinalIgnoreCase));
 
-    public ProcessingRecord With(RecordEntry entry) => this with
+    /// <summary>
+    /// Kaydı ekler veya yeniler. Yeni sonuç başarısızsa, daha önce yazılmış çıktının programa ait olduğu unutulmaz.
+    /// </summary>
+    public ProcessingRecord With(RecordEntry entry)
     {
-        Entries = Entries
-            .Where(e => !string.Equals(e.SourceName, entry.SourceName, StringComparison.OrdinalIgnoreCase))
-            .Append(entry)
-            .OrderBy(e => e.SourceName, StringComparer.OrdinalIgnoreCase)
-            .ToList(),
-    };
+        var previous = Find(entry.SourceName);
+        if (!entry.HasOutput && previous is not null
+            && string.Equals(previous.OutputName, entry.OutputName, StringComparison.OrdinalIgnoreCase))
+        {
+            entry = entry with { PreviousOutputSha256 = previous.OutputSha256 };
+        }
+
+        return this with
+        {
+            Entries = Entries
+                .Where(e => !string.Equals(e.SourceName, entry.SourceName, StringComparison.OrdinalIgnoreCase))
+                .Append(entry)
+                .OrderBy(e => e.SourceName, StringComparer.OrdinalIgnoreCase)
+                .ToList(),
+        };
+    }
 
     public IReadOnlyDictionary<string, string> OutputNames()
     {

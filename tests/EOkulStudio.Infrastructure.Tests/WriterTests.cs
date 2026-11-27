@@ -131,6 +131,23 @@ public sealed class OutputWriterTests : IDisposable
         act.Should().Throw<OutputNotWritableException>().Which.Directory.Should().Be(OutputFolder);
     }
 
+    [Fact]
+    public void Linked_E_Okul_cannot_overwrite_the_source()
+    {
+        Directory.CreateSymbolicLink(OutputFolder, _temp.Combine("9B"));
+        try
+        {
+            var act = () => OutputWriter.WritePhoto(_source, "Şule.jpg", [1], overwrite: true);
+
+            act.Should().Throw<OutputNotWritableException>();
+            File.ReadAllText(_source).Should().Be("asıl");
+        }
+        finally
+        {
+            Directory.Delete(OutputFolder);
+        }
+    }
+
     [Theory]
     [InlineData("../a.jpg")]
     [InlineData("alt/a.jpg")]

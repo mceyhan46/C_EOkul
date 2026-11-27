@@ -44,6 +44,31 @@ public class OutputDecisionTests
         OutputDecision.Decide(true, Entry(PhotoStatus.Success), "different", ExistingOutputPolicy.Skip, resuming: false)
             .Should().Be(OutputAction.Write);
 
+    [Theory]
+    [InlineData("yeni", false, OutputAction.Write)] // fotoğraf yine farklı: yeniden dene
+    [InlineData("yeni", true, OutputAction.Write)]
+    [InlineData("abc", true, OutputAction.SkipExisting)] // eski fotoğraf geri konmuş: eski çıktı geçerli
+    public void Failed_rerun_does_not_lose_the_earlier_output(string hash, bool resuming, OutputAction expected)
+    {
+        var record = new ProcessingRecord()
+            .With(Entry(PhotoStatus.Success))
+            .With(Entry(PhotoStatus.Failed, "yeni"))
+            .With(Entry(PhotoStatus.Failed, "yeni"));
+
+        OutputDecision.Decide(true, record.Find("a.jpg"), hash, ExistingOutputPolicy.Skip, resuming)
+            .Should().Be(expected);
+    }
+
+    [Fact]
+    public void Earlier_output_under_another_name_is_not_carried_over()
+    {
+        var record = new ProcessingRecord()
+            .With(Entry(PhotoStatus.Success))
+            .With(Entry(PhotoStatus.Failed, "yeni") with { OutputName = "a_2.jpg" });
+
+        record.Find("a.jpg")!.OutputSha256.Should().BeNull();
+    }
+
     [Fact]
     public void Failed_entry_does_not_own_an_existing_file() =>
         OutputDecision.Decide(true, Entry(PhotoStatus.Failed), "different", ExistingOutputPolicy.Skip, resuming: true)

@@ -102,6 +102,24 @@ public sealed class PhotoScannerTests : IDisposable
     }
 
     [Fact]
+    public void Linked_folders_are_not_followed()
+    {
+        var a = _temp.File("a.jpg");
+        var link = _temp.Combine("döngü");
+        Directory.CreateSymbolicLink(link, _temp.Path);
+        try
+        {
+            var result = _scanner.Scan([_temp.Path], includeSubfolders: true, TestContext.Current.CancellationToken);
+
+            result.Photos.Should().Equal(a);
+        }
+        finally
+        {
+            Directory.Delete(link);
+        }
+    }
+
+    [Fact]
     public void Long_paths_work()
     {
         var segment = new string('k', 60);
