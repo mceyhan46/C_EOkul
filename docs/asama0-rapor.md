@@ -102,6 +102,7 @@ Pakete alınmayanlar: `opencv_videoio_ffmpeg4130_64.dll` (27,25 MB, LGPL; video 
 - Neden: akıştan yüklenen görselde `BitmapCreateOptions.IgnoreImageCache` kullanılması. CI pencereyi açmadığı için yakalanmamıştı.
 - Düzeltme: seçenek kaldırıldı; görsel hatası artık deneme raporunu silmiyor; CI'a pencere testi (`--uitest`) eklendi
   ([geçen çalıştırma](https://github.com/mceyhan46/C_EOkul/actions/runs/45950641503)).
+- Aynı gün saat 17.03'te aynı hata kaydı yeniden iletildi. Kayıttaki çağrı yalnızca eski kodda bulunan seçenekle oluşabildiği için eski paketin çalıştırıldığı değerlendirildi; yeni paket bağlantısı tekrar verildi.
 - Kullanıcı bilgisayarındaki ONNX/OpenCV deneme sonuçları ve düzeltilmiş paketin sonucu **henüz bekleniyor**.
 
 ## Açık riskler
