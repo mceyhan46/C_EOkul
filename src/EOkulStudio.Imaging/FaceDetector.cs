@@ -63,7 +63,8 @@ public sealed class FaceDetector(string modelPath) : IDisposable
             detector.Detect(square, rows);
             var faces = new List<DetectedFace>();
             if (rows.Empty()) return faces;
-            for (var i = 0; i < rows.Rows; i++)
+            var count = rows.Rows;
+            for (var i = 0; i < count; i++)
             {
                 var box = new RectD(rows.Get<float>(i, 0), rows.Get<float>(i, 1), rows.Get<float>(i, 2), rows.Get<float>(i, 3));
                 var points = new PointD[5];
