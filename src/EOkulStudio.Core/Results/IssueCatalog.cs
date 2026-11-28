@@ -17,6 +17,7 @@ public static class IssueCatalog
         IssueCode.MultipleFaces => Blocking("Birden fazla yüz var.", "Kullanılacak yüzü seçin."),
         IssueCode.OutputNotWritable => Blocking("Klasöre yazılamıyor.", "Fotoğrafları yazma izni olan bir klasöre kopyalayın."),
         IssueCode.ProcessingError => Blocking("Fotoğraf işlenirken hata oluştu.", "Tekrar deneyin; sürerse program günlüğünü gönderin."),
+        IssueCode.BackgroundFailed => Blocking("Arka plan kişiden ayrılamadı.", "Yüzün ve omuzların net göründüğü bir fotoğraf kullanın."),
 
         IssueCode.FaceTooSmall => Review("Yüz fotoğrafta çok küçük.", "Yakından çekilmiş bir fotoğraf kullanın."),
         IssueCode.LowResolution => Review("Fotoğrafın çözünürlüğü düşük; sonuç bulanık olabilir.", "Daha büyük bir fotoğraf kullanın."),

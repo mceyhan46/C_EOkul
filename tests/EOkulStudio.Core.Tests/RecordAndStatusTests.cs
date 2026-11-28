@@ -80,7 +80,7 @@ public class IssueTests
     private static readonly IssueCode[] Blocking =
     [
         IssueCode.FileNotFound, IssueCode.CorruptFile, IssueCode.UnsupportedFormat, IssueCode.InsideOutputFolder,
-        IssueCode.NoFace, IssueCode.MultipleFaces, IssueCode.OutputNotWritable, IssueCode.ProcessingError,
+        IssueCode.NoFace, IssueCode.MultipleFaces, IssueCode.OutputNotWritable, IssueCode.ProcessingError, IssueCode.BackgroundFailed,
     ];
 
     [Fact]

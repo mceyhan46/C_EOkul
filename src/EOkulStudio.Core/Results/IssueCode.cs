@@ -11,6 +11,7 @@ public enum IssueCode
     MultipleFaces,
     OutputNotWritable,
     ProcessingError,
+    BackgroundFailed,
 
     // Çıktı üretilir, kontrol gerekir
     FaceTooSmall,
