@@ -6,7 +6,7 @@ if "%~1"=="" (
   pause
   exit /b 2
 )
-"%~dp0eokul-cli.exe" %* --var-olan uzerine-yaz --karsilastirma "%~dp0karsilastirma"
+"%~dp0eokul-cli.exe" %* --karsilastirma "%~dp0karsilastirma"
 echo.
 echo Ciktilar: her klasorun icindeki E_Okul
 echo Karsilastirma gorselleri: "%~dp0karsilastirma"

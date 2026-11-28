@@ -41,7 +41,7 @@ jobs:
           Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
           'RAM: {0:N1} GB' -f ((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 
-      - name: 1000 fotoğraf
+      - name: 1000 fotoğraf (varsayılan paralellik)
         shell: pwsh
         run: |
           $env:PYTHONUTF8 = '1'
