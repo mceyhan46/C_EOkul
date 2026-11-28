@@ -4,7 +4,7 @@ name: yuk-denemesi
 on:
   push:
     branches: ['asama-*']
-    paths: ['.github/workflows/yuk.yml', 'scripts/ornek-uret.py']
+    paths: ['.github/workflows/yuk.yml', 'scripts/ornek-uret.py', 'scripts/buyuk-uret.py']
   workflow_dispatch:
 
 permissions:
@@ -70,4 +70,45 @@ jobs:
           foreach ($workers in 1, 2, 4) {
             "== calisan $workers"
             & publish/komut-satiri/eokul-cli.exe $root --var-olan uzerine-yaz --calisan $workers | Where-Object { $_ -notmatch '^\[|^\s+- ' }
+          }
+
+  buyuk-fotograf:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Modelleri indir ve doğrula
+        shell: pwsh
+        run: ./scripts/indir-modeller.ps1
+
+      - name: Visual C++ dosyalarını hazırla
+        shell: pwsh
+        run: ./scripts/vc-dosyalari.ps1
+
+      - name: Komut satırı aracını yayımla
+        run: >
+          dotnet publish src/EOkulStudio.Cli/EOkulStudio.Cli.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none -o publish/komut-satiri
+
+      - name: 24 megapiksel fotoğraflar (süre ve bellek)
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
+          python -m pip install --quiet pillow==12.3.0
+          $root = Join-Path $env:RUNNER_TEMP 'Büyük Fotoğraflar'
+          python scripts/buyuk-uret.py $root 40
+          if ($LASTEXITCODE -ne 0) { throw 'Örnek üretilemedi' }
+          Get-ChildItem $root -Filter *.jpg | Select-Object -First 1 Name, Length | Format-List
+          foreach ($workers in 1, 2) {
+            "== calisan $workers"
+            & publish/komut-satiri/eokul-cli.exe $root --var-olan uzerine-yaz --calisan $workers | Where-Object { $_ -notmatch '^\s+- ' }
+            if ($LASTEXITCODE -ne 0) { throw "Çıkış kodu $LASTEXITCODE" }
           }
