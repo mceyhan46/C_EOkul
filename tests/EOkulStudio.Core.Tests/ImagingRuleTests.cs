@@ -30,7 +30,7 @@ public class RollEstimatorTests
         // Gerçek yüz bulucu eğimi eksik ölçer (duyarlılık 1'den küçük); büyütme katsayısı buna göredir.
         foreach (var sensitivity in new[] { 0.8, 0.6, 0.4 })
         {
-            var estimate = RollEstimator.Estimate(Detector(trueRoll, sensitivity));
+            var estimate = RollEstimator.Estimate(Detector(trueRoll, sensitivity), TestContext.Current.CancellationToken);
 
             estimate.Should().BeApproximately(trueRoll, 3.0, $"duyarlılık {sensitivity}");
         }
@@ -39,14 +39,14 @@ public class RollEstimatorTests
     [Fact]
     public void Roll_is_limited()
     {
-        RollEstimator.Estimate(Detector(80, 0.6)).Should().Be(RollEstimator.MaxRoll);
+        RollEstimator.Estimate(Detector(80, 0.6), TestContext.Current.CancellationToken).Should().Be(RollEstimator.MaxRoll);
     }
 
     [Fact]
     public void No_detection_means_no_roll()
     {
-        RollEstimator.Estimate(_ => null).Should().Be(0);
-        RollEstimator.Estimate(_ => [new PointD(0, 0)]).Should().Be(0);
+        RollEstimator.Estimate(_ => null, TestContext.Current.CancellationToken).Should().Be(0);
+        RollEstimator.Estimate(_ => [new PointD(0, 0)], TestContext.Current.CancellationToken).Should().Be(0);
     }
 
     [Fact]
