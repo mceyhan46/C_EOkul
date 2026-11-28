@@ -37,7 +37,7 @@ jobs:
         run: >
           dotnet test --solution EOkulStudio.sln -c Release -p:Platform=x64 --no-build
           --results-directory ${{ github.workspace }}/publish/test-sonuclari
-          --coverage --coverage-output-format cobertura
+          --coverage --coverage-output-format cobertura --output Detailed
 
       - name: Core kapsam eşiği
         shell: pwsh
