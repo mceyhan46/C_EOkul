@@ -30,6 +30,21 @@ public sealed class PipelineOutputTests(PipelineFixture fixture) : IClassFixture
     }
 
     [Fact]
+    public void Output_matches_the_reference_image()
+    {
+        // Başvuru görüntüsü Windows derleme sunucusunda üretildi ve gözle denetlendi. Algoritma bilerek
+        // değiştirilirse yenilenir. Küçük pay, farklı işlemcilerdeki sayısal farklar içindir.
+        var result = fixture.Run(TestImages.SampleBytes());
+
+        using var actual = TestImages.DecodeColor(result.Jpeg!);
+        using var expected = TestImages.DecodeColor(
+            File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "samples", "ornek-cikti.jpg")));
+        var difference = TestImages.MeanDifference(actual, expected);
+        TestContext.Current.TestOutputHelper?.WriteLine($"başvurudan ortalama fark: {difference:0.000}");
+        difference.Should().BeLessThan(1.5);
+    }
+
+    [Fact]
     public void Background_is_white_and_the_person_is_kept()
     {
         fixture.Run(TestImages.SampleBytes(), "zemin");

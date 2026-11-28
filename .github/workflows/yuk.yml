@@ -1,0 +1,73 @@
+name: yuk-denemesi
+
+# 1000 fotoğraflık toplu işlem: kararlılık, süre ve bellek ölçümü. Yalnız kamu malı örnekten üretilen görseller.
+on:
+  push:
+    branches: ['asama-*']
+    paths: ['.github/workflows/yuk.yml', 'scripts/ornek-uret.py']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Modelleri indir ve doğrula
+        shell: pwsh
+        run: ./scripts/indir-modeller.ps1
+
+      - name: Visual C++ dosyalarını hazırla
+        shell: pwsh
+        run: ./scripts/vc-dosyalari.ps1
+
+      - name: Komut satırı aracını yayımla
+        run: >
+          dotnet publish src/EOkulStudio.Cli/EOkulStudio.Cli.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none -o publish/komut-satiri
+
+      - name: İşlemci ve bellek
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
+          'RAM: {0:N1} GB' -f ((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+
+      - name: 1000 fotoğraf
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          python -m pip install --quiet pillow==12.3.0
+          $root = Join-Path $env:RUNNER_TEMP 'Yük Denemesi'
+          python scripts/ornek-uret.py $root 1000
+          if ($LASTEXITCODE -ne 0) { throw 'Örnek üretilemedi' }
+          $out = & publish/komut-satiri/eokul-cli.exe $root
+          $code = $LASTEXITCODE
+          $out | Where-Object { $_ -notmatch '^\[|^\s+- ' }
+          if ($code -ne 0) { $out | Select-String -Context 0, 2 -SimpleMatch 'Başarısız ' | Select-Object -First 10; throw "Çıkış kodu $code" }
+          $count = (Get-ChildItem $root -Recurse -File -Filter *.jpg | Where-Object FullName -match '\\E_Okul\\').Count
+          if ($count -ne 1000) { throw "Çıktı sayısı $count" }
+          if (Get-ChildItem $root -Recurse -File -Force -Filter .eokul_tmp_*) { throw 'Geçici dosya kalmış' }
+          'Devam denemesi (hepsi atlanmalı):'
+          & publish/komut-satiri/eokul-cli.exe $root --devam | Select-Object -Last 4
+
+      - name: 200 fotoğraf, aynı anda 2 fotoğraf (karşılaştırma)
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          $root = Join-Path $env:RUNNER_TEMP 'Yük İki'
+          python scripts/ornek-uret.py $root 200
+          foreach ($workers in 1, 2, 4) {
+            "== calisan $workers"
+            & publish/komut-satiri/eokul-cli.exe $root --var-olan uzerine-yaz --calisan $workers | Where-Object { $_ -notmatch '^\[|^\s+- ' }
+          }
