@@ -8,6 +8,9 @@
     <PackageReference Include="OpenCvSharp4.runtime.win" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="EOkulStudio.Imaging.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\EOkulStudio.Core\EOkulStudio.Core.csproj" />
   </ItemGroup>
 </Project>

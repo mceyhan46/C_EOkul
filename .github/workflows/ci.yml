@@ -47,6 +47,7 @@ jobs:
           python scripts/kapsam-denetle.py publish/test-sonuclari EOkulStudio.Core 85
           if ($LASTEXITCODE -ne 0) { throw 'Core kapsamı yetersiz' }
           python scripts/kapsam-denetle.py publish/test-sonuclari EOkulStudio.Infrastructure 0
+          python scripts/kapsam-denetle.py publish/test-sonuclari EOkulStudio.Imaging 0
 
       - name: Tek dosya yayımla (self-contained)
         run: >
@@ -86,6 +87,60 @@ jobs:
           $files = Get-ChildItem publish\uygulama -Recurse -File
           $mb = ($files | Measure-Object Length -Sum).Sum / 1MB
           'Paket: {0} dosya, {1:N1} MB' -f $files.Count, $mb | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: İşlemci bilgisi
+        shell: pwsh
+        run: Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors | Format-List
+
+      - name: Komut satırı aracını yayımla
+        run: >
+          dotnet publish src/EOkulStudio.Cli/EOkulStudio.Cli.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=none -o publish/komut-satiri
+
+      - name: Örnek klasörü işle (Türkçe yollar; kaynaklar değişmemeli)
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = '1'
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          python -m pip install --quiet pillow==12.3.0
+          $root = Join-Path $env:RUNNER_TEMP 'Örnek İşleri çğşöü'
+          python scripts/ornek-uret.py $root
+          if ($LASTEXITCODE -ne 0) { throw 'Örnek üretilemedi' }
+          function Get-Sources {
+            Get-ChildItem $root -Recurse -File -Force | Where-Object FullName -notmatch '\\E_Okul\\' |
+              Sort-Object FullName |
+              ForEach-Object { "$($_.FullName)|$((Get-FileHash -LiteralPath $_.FullName).Hash)|$($_.LastWriteTimeUtc.Ticks)" }
+          }
+          $before = Get-Sources
+          $out = & publish/komut-satiri/eokul-cli.exe $root --karsilastirma publish/karsilastirma
+          $code = $LASTEXITCODE
+          $out
+          # İki yüz, yüzsüz ve bozuk örnek bilerek başarısızdır.
+          if ($code -ne 1) { throw "Beklenen çıkış kodu 1, gelen $code" }
+          if (-not ($out | Select-String -SimpleMatch 'Başarısız: 3 ')) { throw 'Başarısız sayısı 3 olmalı' }
+          if (Compare-Object $before (Get-Sources)) { throw 'Kaynak dosyalar değişti' }
+          $again = & publish/komut-satiri/eokul-cli.exe $root
+          $again | Select-Object -Last 4
+          if (-not ($again | Select-String -SimpleMatch 'Atlanan: 7')) { throw 'İkinci çalıştırmada 7 fotoğraf atlanmalı' }
+          if (Compare-Object $before (Get-Sources)) { throw 'Kaynak dosyalar değişti' }
+          $outputs = Get-ChildItem $root -Recurse -File -Filter *.jpg | Where-Object FullName -match '\\E_Okul\\' | Sort-Object Name
+          $outputs | Format-Table Name, Length
+          python scripts/gorsel-dok.py 0 $outputs.FullName
+          python scripts/gorsel-dok.py 1500 (Get-ChildItem publish/karsilastirma -Filter *.jpg).FullName
+          exit 0
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: eokul-foto-komut-satiri
+          path: publish/komut-satiri
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ornek-karsilastirma-gorselleri
+          path: publish/karsilastirma
+          retention-days: 14
 
       - uses: actions/upload-artifact@v7
         with:

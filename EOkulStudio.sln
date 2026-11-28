@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Core.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Infrastructure.Tests", "tests\EOkulStudio.Infrastructure.Tests\EOkulStudio.Infrastructure.Tests.csproj", "{CF836247-3414-5778-8EFC-E1C8F403C441}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Cli", "src\EOkulStudio.Cli\EOkulStudio.Cli.csproj", "{02E16F77-76F4-57EB-957B-B66D28F96ED7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOkulStudio.Imaging.Tests", "tests\EOkulStudio.Imaging.Tests\EOkulStudio.Imaging.Tests.csproj", "{20252F77-0430-59A9-8B13-ACFD5EBE94B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -49,6 +53,14 @@ Global
 		{CF836247-3414-5778-8EFC-E1C8F403C441}.Debug|x64.Build.0 = Debug|x64
 		{CF836247-3414-5778-8EFC-E1C8F403C441}.Release|x64.ActiveCfg = Release|x64
 		{CF836247-3414-5778-8EFC-E1C8F403C441}.Release|x64.Build.0 = Release|x64
+		{02E16F77-76F4-57EB-957B-B66D28F96ED7}.Debug|x64.ActiveCfg = Debug|x64
+		{02E16F77-76F4-57EB-957B-B66D28F96ED7}.Debug|x64.Build.0 = Debug|x64
+		{02E16F77-76F4-57EB-957B-B66D28F96ED7}.Release|x64.ActiveCfg = Release|x64
+		{02E16F77-76F4-57EB-957B-B66D28F96ED7}.Release|x64.Build.0 = Release|x64
+		{20252F77-0430-59A9-8B13-ACFD5EBE94B8}.Debug|x64.ActiveCfg = Debug|x64
+		{20252F77-0430-59A9-8B13-ACFD5EBE94B8}.Debug|x64.Build.0 = Debug|x64
+		{20252F77-0430-59A9-8B13-ACFD5EBE94B8}.Release|x64.ActiveCfg = Release|x64
+		{20252F77-0430-59A9-8B13-ACFD5EBE94B8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,5 +72,7 @@ Global
 		{0F7B63D0-EDFB-5C8C-BCD0-D49E61C63B68} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
 		{C612D9FF-4808-5D96-9CD7-16151CE74A44} = {F6E48F05-25D8-5E91-948F-05DD5FECD6B0}
 		{CF836247-3414-5778-8EFC-E1C8F403C441} = {F6E48F05-25D8-5E91-948F-05DD5FECD6B0}
+		{02E16F77-76F4-57EB-957B-B66D28F96ED7} = {124A252B-6CD1-5653-A652-AA2DCE818F97}
+		{20252F77-0430-59A9-8B13-ACFD5EBE94B8} = {F6E48F05-25D8-5E91-948F-05DD5FECD6B0}
 	EndGlobalSection
 EndGlobal

@@ -257,6 +257,25 @@ public class RoiPlannerTests
     }
 }
 
+public class ImageMatrixTests
+{
+    [Fact]
+    public void Matrix_for_a_scaled_region_maps_pixel_centres()
+    {
+        var crop = new RotatedCrop(300, 400, 200, 260, 0);
+
+        var m = crop.OutputToImageMatrix(100, 130, new PointD(100, 100), 0.5, 0.25);
+
+        // Çıktının ilk pikselinin merkezi kaynakta (201, 271), bölge görüntüsünde (50.5, 42.75) noktasıdır.
+        m[0, 2].Should().BeApproximately(50.0, 1e-9);
+        m[1, 2].Should().BeApproximately(42.25, 1e-9);
+        m[0, 0].Should().BeApproximately(1.0, 1e-9);
+        m[1, 1].Should().BeApproximately(0.5, 1e-9);
+        m[0, 1].Should().BeApproximately(0, 1e-9);
+        m[1, 0].Should().BeApproximately(0, 1e-9);
+    }
+}
+
 public class PipelineOptionTests
 {
     [Fact]

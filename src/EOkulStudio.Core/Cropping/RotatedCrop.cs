@@ -22,18 +22,25 @@ public readonly record struct RotatedCrop(double CenterX, double CenterY, double
     /// Çıktı pikselinden kaynak pikseline 2x3 afin matris [a, b, tx; c, d, ty]
     /// (OpenCV WarpAffine, WARP_INVERSE_MAP ile). Piksel merkezleri hizalanır.
     /// </summary>
-    public double[,] OutputToSourceMatrix(int outputWidth, int outputHeight)
+    public double[,] OutputToSourceMatrix(int outputWidth, int outputHeight) =>
+        OutputToImageMatrix(outputWidth, outputHeight, new PointD(0, 0), 1, 1);
+
+    /// <summary>
+    /// Aynı matris, kaynaktan kesilip ölçeklenmiş bir görüntü için: sol üstü kaynakta
+    /// <paramref name="origin"/> olan ve <paramref name="scaleX"/>, <paramref name="scaleY"/> ile ölçeklenen görüntü.
+    /// </summary>
+    public double[,] OutputToImageMatrix(int outputWidth, int outputHeight, PointD origin, double scaleX, double scaleY)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(outputWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(outputHeight);
-        var origin = ToSource(0.5 / outputWidth, 0.5 / outputHeight);
+        var first = ToSource(0.5 / outputWidth, 0.5 / outputHeight);
         var right = ToSource(1.5 / outputWidth, 0.5 / outputHeight);
         var down = ToSource(0.5 / outputWidth, 1.5 / outputHeight);
-        // Kaynakta da piksel merkezi (i + 0.5) indeks i'ye karşılık gelir.
+        // Görüntüde piksel merkezi (i + 0.5) indeks i'ye karşılık gelir.
         return new[,]
         {
-            { right.X - origin.X, down.X - origin.X, origin.X - 0.5 },
-            { right.Y - origin.Y, down.Y - origin.Y, origin.Y - 0.5 },
+            { (right.X - first.X) * scaleX, (down.X - first.X) * scaleX, (first.X - origin.X) * scaleX - 0.5 },
+            { (right.Y - first.Y) * scaleY, (down.Y - first.Y) * scaleY, (first.Y - origin.Y) * scaleY - 0.5 },
         };
     }
 
